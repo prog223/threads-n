@@ -2,14 +2,16 @@ import ThreadCard from '@/components/cards/ThreadCard';
 import { fetchPosts } from '@/lib/actions/thread.actions';
 import { fetchUser } from '@/lib/actions/user.actions';
 import { currentUser } from '@clerk/nextjs';
+import { GetStaticProps } from 'next';
 import { redirect } from 'next/navigation';
 
-export default async function Home() {
+export default async function Home({ data }: any) {
 	const result = await fetchPosts(1, 30);
 	const user = await currentUser();
 	if (!user) return null;
 	const userInfo = await fetchUser(user.id);
 	if (!userInfo?.onboarded) redirect('/onboarding');
+	console.log(data, 'data');
 
 	return (
 		<>
@@ -28,7 +30,6 @@ export default async function Home() {
 								parentId={post.parentId}
 								content={post.text}
 								author={post.author}
-								community={post.community}
 								createdAt={post.ceratedAt}
 								comments={post.children}
 							/>
@@ -40,15 +41,15 @@ export default async function Home() {
 	);
 }
 
-// export async function getServerSideProps() {
+// export const getServerSideProps: GetStaticProps<any> = async (context) => {
 // 	const res = await fetch('https://jsonplaceholder.typicode.com/users');
 // 	const data = await res.json();
 
-// 	console.log(data[0]);
+// 	console.log(data, 'data');
 
 // 	return {
 // 		props: {
 // 			data,
 // 		},
 // 	};
-// }
+// };

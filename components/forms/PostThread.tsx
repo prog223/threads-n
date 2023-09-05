@@ -71,6 +71,7 @@ function PostThread({ userId }: { userId: string }) {
 								<Textarea
 									rows={15}
 									{...field}
+									className='resize-none'
 								/>
 							</FormControl>
 							<FormMessage />
