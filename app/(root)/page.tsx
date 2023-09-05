@@ -9,9 +9,9 @@ export default async function Home({ data }: any) {
 	const result = await fetchPosts(1, 30);
 	const user = await currentUser();
 	if (!user) return null;
+	
 	const userInfo = await fetchUser(user.id);
 	if (!userInfo?.onboarded) redirect('/onboarding');
-	console.log(data, 'data');
 
 	return (
 		<>
