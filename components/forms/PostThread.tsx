@@ -18,17 +18,7 @@ import { ThreadValidation } from '@/lib/validations/thread';
 import { updateUser } from '@/lib/actions/user.actions';
 import { createThread } from '@/lib/actions/thread.actions';
 
-interface Props {
-	user: {
-		id: string;
-		objectId: string;
-		username: string;
-		name: string;
-		bio: string;
-		image: string;
-	};
-	btnTitle: string;
-}
+
 
 function PostThread({ userId }: { userId: string }) {
 	const pathname = usePathname();
@@ -43,14 +33,14 @@ function PostThread({ userId }: { userId: string }) {
 	});
 
 	const onSubmit = async (values: z.infer<typeof ThreadValidation>) => {
-		await createThread({
-			text: values.thread,
-			author: userId,
-			communityId: null,
-			path: pathname,
-		});
+		if (pathname)
+			await createThread({
+				text: values.thread,
+				author: userId,
+				path: pathname,
+			});
 
-      router.push('/')
+		router.push('/');
 	};
 
 	return (
@@ -71,7 +61,7 @@ function PostThread({ userId }: { userId: string }) {
 								<Textarea
 									rows={15}
 									{...field}
-									className='resize-none'
+									className="resize-none"
 								/>
 							</FormControl>
 							<FormMessage />

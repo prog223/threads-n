@@ -15,16 +15,17 @@ interface Params {
 	path: string;
 }
 
+connectToDB();
+
 export async function updateUser({
 	userId,
 	username,
 	name,
 	bio,
 	image,
-	path,
+	path
 }: Params): Promise<void> {
 	try {
-		connectToDB();
 		await User.findOneAndUpdate(
 			{ id: userId },
 			{
@@ -47,13 +48,8 @@ export async function updateUser({
 
 export async function fetchUser(userId: string) {
 	try {
-		connectToDB();
-
-		return await User.findOne({ id: userId });
-		// .populate({
-		// 	path: 'community',
-		// 	model: Commynity
-		// });
+		const user = await User.findOne({ id: userId });
+		return user
 	} catch (error: any) {
 		throw new Error(`Failed to fetch user: ${error.message}`);
 	}
@@ -61,8 +57,6 @@ export async function fetchUser(userId: string) {
 
 export async function fetchUserPosts(userId: string) {
 	try {
-		connectToDB();
-
 		const threads = await User.findOne({ id: userId }).populate({
 			path: 'threads',
 			model: Thread,
@@ -97,12 +91,8 @@ export async function fetchUsers({
 	sortBy?: SortOrder;
 }) {
 	try {
-		connectToDB();
-
 		const skipAmount = (pageNumber - 1) * pageSize;
-
 		const regex = new RegExp(searchString, 'i');
-
 		const query: FilterQuery<typeof User> = {
 			id: { $ne: userId },
 		};
@@ -122,9 +112,7 @@ export async function fetchUsers({
 			.limit(pageSize);
 
 		const totalUserCount = await User.countDocuments(query);
-
 		const users = await userQuery.exec();
-
 		const isNext = totalUserCount > skipAmount + users.length;
 
 		return { users, isNext };
@@ -135,18 +123,14 @@ export async function fetchUsers({
 
 export async function fetchActivity(userId: string) {
 	try {
-		connectToDB();
-
 		const userThreads = await Thread.find({ author: userId });
-
 		const childThreadIds = userThreads.reduce((acc, userThread) => {
 			return acc.concat(userThread.children);
 		}, []);
 
-		
 		const replies = await Thread.find({
 			_id: { $in: childThreadIds },
-			author: { $ne: userId }, 
+			author: { $ne: userId },
 		}).populate({
 			path: 'author',
 			model: User,

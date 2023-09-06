@@ -13,7 +13,7 @@ async function Page({ params }: { params: { id: string } }) {
 
 	const userInfo = await fetchUser(params.id);
 	if (!userInfo?.onboarded) redirect('/onboarding');
-
+	
 	return (
 		<section>
 			<ProfileHeader
@@ -61,7 +61,7 @@ async function Page({ params }: { params: { id: string } }) {
 							className="w-full text-light-1"
 						>
 							<ThreadsTab
-								currentUserId={user.id}
+								currentUserId={userInfo._id}
 								accountId={userInfo.id}
 								accountType="User"
 							/>

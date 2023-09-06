@@ -8,17 +8,13 @@ import { connectToDB } from '../mongoose';
 interface Params {
 	text: string;
 	author: string;
-	communityId: string | null;
 	path: string;
 }
 
-export async function createThread({
-	text,
-	author,
-	communityId,
-	path,
-}: Params) {
-	connectToDB();
+connectToDB();
+
+
+export async function createThread({ text, author, path }: Params) {
 	try {
 		const createThread = await Thread.create({
 			text,
@@ -37,35 +33,40 @@ export async function createThread({
 }
 
 export async function fetchPosts(pageNumber = 1, pageSize = 20) {
-	connectToDB();
-	const skipAmount = (pageNumber - 1) * pageSize;
+	try {
+		const skipAmount = (pageNumber - 1) * pageSize;
+		const postQuery = Thread.find({ parentId: { $in: [null, undefined] } })
+			.sort({ createdAt: 'desc' })
+			.skip(skipAmount)
+			.limit(pageSize)
+			.populate({ path: 'author' })
+			.populate({
+				path: 'children',
+				populate: {
+					path: 'author',
+					model: User,
+					select: '_id name parentId image',
+				},
+			})
+			.populate({
+				path: 'likes',
+				strictPopulate: false,
+			});
 
-	const postQuery = Thread.find({ parentId: { $in: [null, undefined] } })
-		.sort({ createdAt: 'desc' })
-		.skip(skipAmount)
-		.limit(pageSize)
-		.populate({ path: 'author' })
-		.populate({
-			path: 'children',
-			populate: {
-				path: 'author',
-				model: User,
-				select: '_id name parentId image',
-			},
+		const totalPostCount = await Thread.countDocuments({
+			parentId: { $in: [null, undefined] },
 		});
+		
+		const posts = await postQuery.exec();
+		const isNext = totalPostCount > skipAmount + posts.length;
 
-	const totalPostCount = await Thread.countDocuments({
-		parentId: { $in: [null, undefined] },
-	});
-	const posts = await postQuery.exec();
-	const isNext = totalPostCount > skipAmount + posts.length;
-
-	return { posts, isNext };
+		return { posts, isNext };
+	} catch (error: any) {
+		throw new Error(`Error creating thread:${error.message}`);
+	}
 }
 
 export async function fetchThreadById(id: string) {
-	connectToDB();
-
 	try {
 		const thread = await Thread.findById(id)
 			.populate({
@@ -106,7 +107,6 @@ export async function addCommentToThread(
 	userId: string,
 	path: string
 ) {
-	connectToDB();
 	try {
 		const originalThread = await Thread.findById(threadId);
 
@@ -121,13 +121,10 @@ export async function addCommentToThread(
 		});
 
 		const saveCommentThread = await commentThread.save();
-
 		originalThread.children.push(saveCommentThread._id);
-
 		await originalThread.save();
-
 		revalidatePath(path);
 	} catch (error: any) {
-		throw new Error(`Error adding omment to thread: ${error.message}`);
+		throw new Error(`Error adding comment to thread: ${error.message}`);
 	}
 }

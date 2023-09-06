@@ -2,14 +2,14 @@ import ThreadCard from '@/components/cards/ThreadCard';
 import { fetchPosts } from '@/lib/actions/thread.actions';
 import { fetchUser } from '@/lib/actions/user.actions';
 import { currentUser } from '@clerk/nextjs';
-import { GetStaticProps } from 'next';
 import { redirect } from 'next/navigation';
+import { useEffect } from 'react';
 
-export default async function Home({ data }: any) {
-	const result = await fetchPosts(1, 30);
+export default async function Home() {
+	const result = await fetchPosts(1, 5);
 	const user = await currentUser();
 	if (!user) return null;
-	
+
 	const userInfo = await fetchUser(user.id);
 	if (!userInfo?.onboarded) redirect('/onboarding');
 
@@ -22,7 +22,7 @@ export default async function Home({ data }: any) {
 					<p>No threads found</p>
 				) : (
 					<>
-						{result?.posts.map((post) => (
+						{result?.posts.map((post: any) => (
 							<ThreadCard
 								key={post._id}
 								id={post._id}
@@ -30,7 +30,7 @@ export default async function Home({ data }: any) {
 								parentId={post.parentId}
 								content={post.text}
 								author={post.author}
-								createdAt={post.ceratedAt}
+								createdAt={post.createdAt}
 								comments={post.children}
 							/>
 						))}
@@ -40,16 +40,3 @@ export default async function Home({ data }: any) {
 		</>
 	);
 }
-
-// export const getServerSideProps: GetStaticProps<any> = async (context) => {
-// 	const res = await fetch('https://jsonplaceholder.typicode.com/users');
-// 	const data = await res.json();
-
-// 	console.log(data, 'data');
-
-// 	return {
-// 		props: {
-// 			data,
-// 		},
-// 	};
-// };

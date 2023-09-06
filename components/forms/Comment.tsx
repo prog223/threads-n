@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
 import { usePathname, useRouter } from 'next/navigation';
 import { CommentValidation } from '@/lib/validations/thread';
 import { Input } from '../ui/input';
@@ -37,12 +36,13 @@ const Comment = ({ threadId, currentUserId, currentUserImg }: Props) => {
 	});
 
 	const onSubmit = async (values: z.infer<typeof CommentValidation>) => {
-		await addCommentToThread(
-			threadId,
-			values.thread,
-			JSON.parse(currentUserId),
-			pathname
-		);
+		if (pathname)
+			await addCommentToThread(
+				threadId,
+				values.thread,
+				JSON.parse(currentUserId),
+				pathname
+			);
 
 		form.reset();
 	};
