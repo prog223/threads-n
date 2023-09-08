@@ -3,12 +3,11 @@ import { fetchPosts } from '@/lib/actions/thread.actions';
 import { fetchUser } from '@/lib/actions/user.actions';
 import { currentUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
-import { useEffect } from 'react';
 
 export default async function Home() {
 	const result = await fetchPosts(1, 5);
 	const user = await currentUser();
-	if (!user) return null;
+	if (!user) redirect('/sign-in');
 
 	const userInfo = await fetchUser(user.id);
 	if (!userInfo?.onboarded) redirect('/onboarding');

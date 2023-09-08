@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 
 async function Page() {
 	const user = await currentUser();
-	if (!user) return null;
+	if (!user) redirect('/sign-in');
 
 	const userInfo = await fetchUser(user.id);
 	if (!userInfo?.onboarded) redirect('/onboarding');
@@ -20,7 +20,7 @@ async function Page() {
 	return (
 		<section>
 			<h1 className="head-text mb-10">Search</h1>
-
+			
 			<div className="mt-14 flex flex-col gap-9">
 				{result.users.length === 0 ? (
 					<p>No users...</p>
